@@ -1,0 +1,4 @@
+ls
+cd home
+touch testfile.txt
+chmod 644 testfile.txt
