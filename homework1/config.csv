@@ -1,1 +1,2 @@
-
+username,virtual_fs_path,startup_script_path
+user,virtual_fs,script.sh
