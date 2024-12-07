@@ -1,1 +1,4 @@
-
+mkdir -p virtual_fs/home virtual_fs/usr
+echo "Hello, World!" > virtual_fs/home/hello.txt
+tar -cf virtual_fs.tar -C virtual_fs .
+rm -rf virtual_fs
