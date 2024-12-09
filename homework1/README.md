@@ -39,7 +39,7 @@ tar. Эмулятор должен работать в режиме GUI.
         Ctrl+R cmd - Вызов командной строки Windows.
         node src/emulator.js --config=./config.json
 
-5. Вуаля можем пользоваться командами cd ls exit clear chmod find
+5. Можем пользоваться командами cd ls exit touch chmod
 
 6. Для запуска тестов прописываем команду
 
