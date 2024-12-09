@@ -45,5 +45,19 @@ tar. Эмулятор должен работать в режиме GUI.
 
         npm test
 
+
+Для входа в эмулятор
+
+    C:\Users\Георгий>cd G:\Konfig
+
+    C:\Users\Георгий>cd /d G:
+
+    G:\Konfig>py emulator.py virtual_fs.tar
+
+Для проверки тестов
+
+    python -m unittest unittests.py
+
+
    
 
