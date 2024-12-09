@@ -2,23 +2,24 @@ import tkinter as tk
 from tkinter import scrolledtext, messagebox
 import os
 import tarfile
+import sys
 import argparse
-import stat
+
 
 class ShellEmulator:
-    def __init__(self, master, user, virtual_fs_path):
+    def __init__(self, master, virtual_fs_path):
         self.master = master
         self.master.title("Shell Emulator")
-        self.username = user
-        self.virtual_fs_path = virtual_fs_path
         self.current_path = "/"
         self.history = []
 
-        # GUI Components
         self.text_area = scrolledtext.ScrolledText(master, wrap=tk.WORD)
         self.text_area.pack(padx=10, pady=10, fill=tk.BOTH, expand=True)
 
-        self.label = tk.Label(master, text=f"{self.username}@shell>")
+        self.username = os.getlogin()
+        self.virtual_fs_path = virtual_fs_path
+
+        self.label = tk.Label(master, text=f"{self.username}")
         self.label.pack(padx=10, pady=5)
 
         self.entry = tk.Entry(master)
@@ -26,6 +27,19 @@ class ShellEmulator:
         self.entry.bind("<Return>", self.execute_command)
 
         self.extract_virtual_fs()
+
+    @staticmethod
+    def parse_arguments():
+        parser = argparse.ArgumentParser(description='Запуск эмулятора командной строки vshell.')
+        parser.add_argument('--script', type=str, help='Имя файла со скриптом команд.')
+        parser.add_argument('virtual_fs', type=str, help='Путь к образу файловой системы (tar или zip).')
+
+        args = parser.parse_args()
+
+        if not os.path.exists(args.virtual_fs):
+            parser.error(f"Файл виртуальной файловой системы '{args.virtual_fs}' не найден.")
+
+        return args
 
     def extract_virtual_fs(self):
         if not os.path.exists(self.virtual_fs_path):
@@ -35,24 +49,58 @@ class ShellEmulator:
         with tarfile.open(self.virtual_fs_path) as tar:
             tar.extractall(path="virtual_fs", filter=tarfile.data_filter)
 
+    def load_script(self, script_file):
+        try:
+            with open(script_file, 'r') as file:
+                for line in file:
+                    command = line.strip()
+                    if command:
+                        self.execute_command_from_script(command)
+        except FileNotFoundError:
+            messagebox.showerror("Ошибка", f"Файл скрипта {script_file} не найден.")
+
     def execute_command(self, event):
-        command = self.entry.get().strip()
+        command = self.entry.get()
         self.history.append(command)
 
-        cmd_dict = {
+        command_dict = {
             "ls": self.list_files,
-            "cd": lambda: self.change_directory(command[3:].strip()),
+            "cd": lambda: self.change_directory(command[3:]),
+            "pwd": self.print_working_directory,
+            "cat": lambda: self.cat_file(command[4:]),
             "exit": self.master.quit,
-            "touch": lambda: self.touch_file(command[6:].strip()),
-            "chmod": lambda: self.change_permissions(command[6:].strip())
+            "history": self.show_history,
+            "touch": lambda: self.touch_file(command[6:]),
+            "chmod": lambda: self.chmod_file(command[6:])
         }
 
-        if command.split()[0] in cmd_dict:
-            cmd_dict[command.split()[0]]()
+        cmd_func = command_dict.get(command.split()[0], None)
+
+        if cmd_func:
+            cmd_func()
         else:
             self.text_area.insert(tk.END, f"{self.username}: команда не найдена\n")
 
         self.entry.delete(0, tk.END)
+
+    def execute_command_from_script(self, command):
+        command_dict = {
+            "ls": self.list_files,
+            "cd": lambda: self.change_directory(command[3:]),
+            "pwd": self.print_working_directory,
+            "cat": lambda: self.cat_file(command[4:]),
+            "exit": self.master.quit,
+            "history": self.show_history,
+            "touch": lambda: self.touch_file(command[6:]),
+            "chmod": lambda: self.chmod_file(command[6:])
+        }
+
+        cmd_func = command_dict.get(command.split()[0], None)
+
+        if cmd_func:
+            cmd_func()
+        else:
+            self.text_area.insert(tk.END, f"{self.username}: команда не найдена\n")
 
     def list_files(self):
         try:
@@ -66,51 +114,96 @@ class ShellEmulator:
         if path == "..":
             if self.current_path != "/":
                 parts = self.current_path.split("/")
-                self.current_path = "/".join(parts[:-1]) or "/"
+                parts.pop()
+                self.current_path = "/".join(parts) or "/"
+                return
+
+        new_path = os.path.join(f"virtual_fs{self.current_path}", path)
+
+        if os.path.isdir(new_path):
+            self.current_path = new_path.replace("virtual_fs", "")
+            return
         else:
-            new_path = os.path.join(f"virtual_fs{self.current_path}", path)
-            if os.path.isdir(new_path):
-                self.current_path = os.path.join(self.current_path, path).replace("//", "/")
-            else:
-                self.text_area.insert(tk.END, "Директория не найдена\n")
+            self.text_area.insert(tk.END, "Директория не найдена\n")
+
+    def print_working_directory(self):
+        current_dir = f"{self.username}:{self.current_path}\n"
+        self.text_area.insert(tk.END, current_dir)
+
+    def cat_file(self, filename):
+        if not filename:
+            self.text_area.insert(tk.END, "Ошибка: необходимо указать имя файла.\n")
+            return
+
+        try:
+            # Собираем путь к файлу
+            file_path = os.path.join(f"virtual_fs{self.current_path}", filename.strip())
+
+            # Проверяем, существует ли файл
+            if not os.path.isfile(file_path):
+                self.text_area.insert(tk.END, f"Ошибка: файл '{filename}' не найден.\n")
+                return
+
+            # Открываем файл и выводим его содержимое
+            with open(file_path, 'r') as file:
+                content = file.read()
+                if content:
+                    self.text_area.insert(tk.END, f"{content}\n")
+                else:
+                    self.text_area.insert(tk.END, "Файл пуст.\n")
+
+        except FileNotFoundError:
+            self.text_area.insert(tk.END, f"Ошибка: файл '{filename}' не найден.\n")
+        except PermissionError:
+            self.text_area.insert(tk.END, f"Ошибка: нет доступа к файлу '{filename}'.\n")
+        except Exception as e:
+            self.text_area.insert(tk.END, f"Ошибка при чтении файла: {str(e)}\n")
 
     def touch_file(self, filename):
         try:
-            file_path = os.path.join(f"virtual_fs{self.current_path}", filename)
+            file_path = os.path.join(f"virtual_fs{self.current_path}", filename.strip())
             with open(file_path, 'a'):
                 pass
             self.text_area.insert(tk.END, f"Файл '{filename}' создан.\n")
         except Exception as e:
-            self.text_area.insert(tk.END, f"Ошибка при создании файла: {e}\n")
+            self.text_area.insert(tk.END, f"Ошибка при создании файла '{filename}': {str(e)}\n")
 
-    def change_permissions(self, args):
+    def chmod_file(self, command):
         try:
-            mode, filename = args.split()
-            mode = int(mode, 8)
-            file_path = os.path.join(f"virtual_fs{self.current_path}", filename)
-            os.chmod(file_path, mode)
-            self.text_area.insert(tk.END, f"Права файла '{filename}' изменены на {mode:o}.\n")
-        except (ValueError, FileNotFoundError):
-            self.text_area.insert(tk.END, "Ошибка: неверный формат команды или файл не найден.\n")
+            parts = command.split()
+            if len(parts) != 2:
+                self.text_area.insert(tk.END, "Использование: chmod <права> <файл>\n")
+                return
+
+            permissions, filename = parts
+            file_path = os.path.join(f"virtual_fs{self.current_path}", filename.strip())
+
+            # Преобразуем права в числовое значение
+            permission_map = {'r': 4, 'w': 2, 'x': 1}
+            perms = 0
+            for perm in permissions:
+                perms += permission_map.get(perm, 0)
+
+            os.chmod(file_path, perms)
+            self.text_area.insert(tk.END, f"Права для файла {filename} изменены на {permissions}\n")
+        except FileNotFoundError:
+            self.text_area.insert(tk.END, "Файл не найден\n")
+        except PermissionError:
+            self.text_area.insert(tk.END, "Нет доступа для изменения прав файла\n")
+        except Exception as e:
+            self.text_area.insert(tk.END, f"Ошибка при изменении прав: {str(e)}\n")
+
+    def show_history(self):
+        history_output = "\n".join(self.history) or "История пуста\n"
+        self.text_area.insert(tk.END, f"История команд:\n{history_output}\n")
+
 
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser(description="Эмулятор shell")
-    parser.add_argument("--user", required=True, help="Имя пользователя")
-    parser.add_argument("--fs", required=True, help="Путь к tar-архиву файловой системы")
-    parser.add_argument("--script", help="Путь к стартовому скрипту")
-
-    args = parser.parse_args()
-
+    args = ShellEmulator.parse_arguments()
     root = tk.Tk()
-    app = ShellEmulator(root, args.user, args.fs)
+    app = ShellEmulator(root, args.virtual_fs)
 
     if args.script:
-        try:
-            with open(args.script, 'r') as script_file:
-                for line in script_file:
-                    app.execute_command(event=None)
-        except FileNotFoundError:
-            messagebox.showerror("Ошибка", "Файл скрипта не найден.")
+        app.load_script(args.script)
 
     root.mainloop()
-
