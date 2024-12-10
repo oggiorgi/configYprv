@@ -62,6 +62,9 @@ tar. Эмулятор должен работать в режиме GUI.
 
     python -m unittest unittests.py
 
+Дальше запуск со скриптом
+
+    G:\Konfig>py emulator.py --user Густав --fs virtual_fs.tar --script start_script.txt
 
    
 
