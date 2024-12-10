@@ -1,4 +1,5 @@
 ls
-cd home
-touch testfile.txt
-chmod 644 testfile.txt
+cd usr
+pwd
+touch newfile.txt
+chmod 777 newfile.txt
