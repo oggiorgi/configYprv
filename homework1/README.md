@@ -52,9 +52,9 @@ tar. Эмулятор должен работать в режиме GUI.
 
     C:\Users\Георгий>cd /d G:
 
-    G:\Konfig>py emulator.py virtual_fs.tar
+    G:\Konfig>py emulator.py --user Густав  --fs virtual_fs.tar
 
-Для проверки тестов
+Дальше для проверки тестов
 
     python -m unittest unittests.py
 
