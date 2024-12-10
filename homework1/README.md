@@ -29,40 +29,19 @@ tar. Эмулятор должен работать в режиме GUI.
 
 
 Выполнение
-1. Создать проект и установить библиотеки
+Для запуска проекта запускаем командную строку, переходим в папку с эмулятором и используем команду
 
-        npm install
-2. Установить нужные пакеты:
-
-        npm install yargs adm-zip fs-extrapath jest
-
- 3. Скачать проект на рабочий стол, должна получится такая иерархия:
-
-4. Для запуска проекта запускаем командную строку, переходим в папку с эмулятором и используем команду
-
-        Ctrl+R cmd - Вызов командной строки Windows.
-        node src/emulator.js --config=./config.json
-
-5. Можем пользоваться командами cd ls exit touch chmod
-
-6. Для запуска тестов прописываем команду
-
-        npm test
-
-
-Для входа в эмулятор
-
+    Ctrl+R cmd - Вызов командной строки Windows.
     C:\Users\Георгий>cd G:\Konfig
-
     C:\Users\Георгий>cd /d G:
-
     G:\Konfig>py emulator.py --user Густав  --fs virtual_fs.tar
+Можем пользоваться командами cd ls exit touch chmod
 
-Дальше для проверки тестов
+Для запуска тестов прописываем команду
 
     python -m unittest unittests.py
 
-Дальше запуск со скриптом
+Запуск со скриптом
 
     G:\Konfig>py emulator.py --user Густав --fs virtual_fs.tar --script start_script.txt
 
