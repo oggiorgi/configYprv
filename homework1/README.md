@@ -32,9 +32,12 @@ tar. Эмулятор должен работать в режиме GUI.
 Для запуска проекта запускаем командную строку, переходим в папку с эмулятором и используем команду
 
     Ctrl+R cmd - Вызов командной строки Windows.
-    C:\Users\Георгий>cd G:\Konfig
-    C:\Users\Георгий>cd /d G:
-    G:\Konfig>py emulator.py --user Густав  --fs virtual_fs.tar
+    cd G:\Konfig
+    
+    cd /d G:
+    
+    py emulator.py --user Густав  --fs virtual_fs.tar
+    
 Можем пользоваться командами cd ls exit touch chmod
 
 Для запуска тестов прописываем команду
