@@ -2,12 +2,11 @@ import tkinter as tk
 from tkinter import scrolledtext, messagebox
 import os
 import tarfile
-import sys
 import argparse
 
 
 class ShellEmulator:
-    def __init__(self, master, virtual_fs_path):
+    def __init__(self, master, username, virtual_fs_path):
         self.master = master
         self.master.title("Shell Emulator")
         self.current_path = "/"
@@ -16,10 +15,10 @@ class ShellEmulator:
         self.text_area = scrolledtext.ScrolledText(master, wrap=tk.WORD)
         self.text_area.pack(padx=10, pady=10, fill=tk.BOTH, expand=True)
 
-        self.username = os.getlogin()
+        self.username = username
         self.virtual_fs_path = virtual_fs_path
 
-        self.label = tk.Label(master, text=f"{self.username}")
+        self.label = tk.Label(master, text=f"{self.username}:{self.current_path}")
         self.label.pack(padx=10, pady=5)
 
         self.entry = tk.Entry(master)
@@ -30,14 +29,15 @@ class ShellEmulator:
 
     @staticmethod
     def parse_arguments():
-        parser = argparse.ArgumentParser(description='Запуск эмулятора командной строки vshell.')
-        parser.add_argument('--script', type=str, help='Имя файла со скриптом команд.')
-        parser.add_argument('virtual_fs', type=str, help='Путь к образу файловой системы (tar или zip).')
+        parser = argparse.ArgumentParser(description="Эмулятор командной строки.")
+        parser.add_argument("--user", type=str, help="Имя пользователя.", required=False)
+        parser.add_argument("--fs", type=str, help="Путь к архиву виртуальной файловой системы.", required=True)
+        parser.add_argument("--script", type=str, help="Путь к скрипту с командами.", required=False)
 
         args = parser.parse_args()
 
-        if not os.path.exists(args.virtual_fs):
-            parser.error(f"Файл виртуальной файловой системы '{args.virtual_fs}' не найден.")
+        if not os.path.exists(args.fs):
+            parser.error(f"Файл виртуальной файловой системы '{args.fs}' не найден.")
 
         return args
 
@@ -61,17 +61,14 @@ class ShellEmulator:
 
     def execute_command(self, event):
         command = self.entry.get()
-        self.history.append(command)
 
         command_dict = {
             "ls": self.list_files,
             "cd": lambda: self.change_directory(command[3:]),
             "pwd": self.print_working_directory,
-            "cat": lambda: self.cat_file(command[4:]),
             "exit": self.master.quit,
-            "history": self.show_history,
             "touch": lambda: self.touch_file(command[6:]),
-            "chmod": lambda: self.chmod_file(command[6:])
+            "chmod": lambda: self.chmod_file(command[6:]),
         }
 
         cmd_func = command_dict.get(command.split()[0], None)
@@ -88,11 +85,9 @@ class ShellEmulator:
             "ls": self.list_files,
             "cd": lambda: self.change_directory(command[3:]),
             "pwd": self.print_working_directory,
-            "cat": lambda: self.cat_file(command[4:]),
             "exit": self.master.quit,
-            "history": self.show_history,
             "touch": lambda: self.touch_file(command[6:]),
-            "chmod": lambda: self.chmod_file(command[6:])
+            "chmod": lambda: self.chmod_file(command[6:]),
         }
 
         cmd_func = command_dict.get(command.split()[0], None)
@@ -116,12 +111,14 @@ class ShellEmulator:
                 parts = self.current_path.split("/")
                 parts.pop()
                 self.current_path = "/".join(parts) or "/"
+                self.label.config(text=f"{self.username}:{self.current_path}")
                 return
 
         new_path = os.path.join(f"virtual_fs{self.current_path}", path)
 
         if os.path.isdir(new_path):
             self.current_path = new_path.replace("virtual_fs", "")
+            self.label.config(text=f"{self.username}:{self.current_path}")
             return
         else:
             self.text_area.insert(tk.END, "Директория не найдена\n")
@@ -129,35 +126,6 @@ class ShellEmulator:
     def print_working_directory(self):
         current_dir = f"{self.username}:{self.current_path}\n"
         self.text_area.insert(tk.END, current_dir)
-
-    def cat_file(self, filename):
-        if not filename:
-            self.text_area.insert(tk.END, "Ошибка: необходимо указать имя файла.\n")
-            return
-
-        try:
-            # Собираем путь к файлу
-            file_path = os.path.join(f"virtual_fs{self.current_path}", filename.strip())
-
-            # Проверяем, существует ли файл
-            if not os.path.isfile(file_path):
-                self.text_area.insert(tk.END, f"Ошибка: файл '{filename}' не найден.\n")
-                return
-
-            # Открываем файл и выводим его содержимое
-            with open(file_path, 'r') as file:
-                content = file.read()
-                if content:
-                    self.text_area.insert(tk.END, f"{content}\n")
-                else:
-                    self.text_area.insert(tk.END, "Файл пуст.\n")
-
-        except FileNotFoundError:
-            self.text_area.insert(tk.END, f"Ошибка: файл '{filename}' не найден.\n")
-        except PermissionError:
-            self.text_area.insert(tk.END, f"Ошибка: нет доступа к файлу '{filename}'.\n")
-        except Exception as e:
-            self.text_area.insert(tk.END, f"Ошибка при чтении файла: {str(e)}\n")
 
     def touch_file(self, filename):
         try:
@@ -178,13 +146,7 @@ class ShellEmulator:
             permissions, filename = parts
             file_path = os.path.join(f"virtual_fs{self.current_path}", filename.strip())
 
-            # Преобразуем права в числовое значение
-            permission_map = {'r': 4, 'w': 2, 'x': 1}
-            perms = 0
-            for perm in permissions:
-                perms += permission_map.get(perm, 0)
-
-            os.chmod(file_path, perms)
+            os.chmod(file_path, int(permissions, 8))
             self.text_area.insert(tk.END, f"Права для файла {filename} изменены на {permissions}\n")
         except FileNotFoundError:
             self.text_area.insert(tk.END, "Файл не найден\n")
@@ -193,15 +155,13 @@ class ShellEmulator:
         except Exception as e:
             self.text_area.insert(tk.END, f"Ошибка при изменении прав: {str(e)}\n")
 
-    def show_history(self):
-        history_output = "\n".join(self.history) or "История пуста\n"
-        self.text_area.insert(tk.END, f"История команд:\n{history_output}\n")
-
 
 if __name__ == "__main__":
     args = ShellEmulator.parse_arguments()
+    username = args.user or os.getlogin()
+
     root = tk.Tk()
-    app = ShellEmulator(root, args.virtual_fs)
+    app = ShellEmulator(root, username, args.fs)
 
     if args.script:
         app.load_script(args.script)
