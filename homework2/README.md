@@ -72,7 +72,10 @@
 Эта команда выведет историю коммитов вашего репозитория, что позволит скрипту visualizer.py корректно создать граф зависимостей коммитов.
 
 Запуск скрипта visualizer.py:
-python G:\Kon2\graphviz_visualizer\visualizer.py "C:/Users/Георгий/configYprv" "C:/output/graph.png"
+  
+    python G:\Kon2\graphviz_visualizer\visualizer.py "C:/Users/Георгий/configYprv" "C:/output/graph.png"
 Первый аргумент: путь к клонированному репозиторию.
+
 Второй аргумент: путь, где будет сохранен граф graph.png.
+
 После выполнения команды граф должен появиться в папке C:/output/.
