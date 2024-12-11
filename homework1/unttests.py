@@ -1,82 +1,108 @@
 import unittest
-from unittest.mock import MagicMock, patch
-import tkinter as tk
+import os
+import tarfile
 from emulator import ShellEmulator
-
+from tkinter import Tk
 
 class TestShellEmulator(unittest.TestCase):
 
-    @patch('tarfile.open')  # Мокируем tarfile.open
-    @patch.object(ShellEmulator, 'extract_virtual_fs')  # Мокируем метод extract_virtual_fs
-    def setUp(self, mock_extract, mock_tarfile):
-        """Инициализация ShellEmulator для каждого теста."""
-        # Заглушка для extract_virtual_fs, чтобы не пытаться извлечь файл
-        mock_extract.return_value = None
+    @classmethod
+    def setUpClass(cls):
+        # Создаём виртуальную файловую систему для тестов
+        cls.virtual_fs_path = "test_fs.tar.gz"
+        with tarfile.open(cls.virtual_fs_path, "w:gz") as tar:
+            os.mkdir("test_fs")
+            with open("test_fs/test_file.txt", "w") as f:
+                f.write("test content")
+            tar.add("test_fs", arcname="/")
+            os.remove("test_fs/test_file.txt")
+            os.rmdir("test_fs")
 
-        # Заглушка для tarfile.open
-        mock_tarfile.return_value.__enter__.return_value.extractall = MagicMock()
+    @classmethod
+    def tearDownClass(cls):
+        os.remove(cls.virtual_fs_path)
+        if os.path.exists("virtual_fs"):
+            for root, dirs, files in os.walk("virtual_fs", topdown=False):
+                for name in files:
+                    os.remove(os.path.join(root, name))
+                for name in dirs:
+                    os.rmdir(os.path.join(root, name))
+            os.rmdir("virtual_fs")
 
-        # Создаем эмулятор
-        self.root = tk.Tk()
-        self.emulator = ShellEmulator(self.root, "test_user", "test_virtual_fs.tar")
+    def setUp(self):
+        self.root = Tk()
+        self.emulator = ShellEmulator(self.root, "test_user", self.virtual_fs_path)
 
-    @patch('os.listdir')
-    def test_list_files(self, mock_listdir):
-        """Тест команды 'ls'."""
-        # Мокаем список файлов
-        mock_listdir.return_value = ["file1.txt", "file2.txt"]
+    def tearDown(self):
+        self.root.destroy()
 
-        # Выполняем команду
-        with patch.object(self.emulator.text_area, 'insert') as mock_insert:
-            self.emulator.list_files()
+    def test_extract_virtual_fs(self):
+        self.emulator.extract_virtual_fs()
+        self.assertTrue(os.path.exists("virtual_fs"))
 
-        # Проверяем, что имена файлов выведены
-        mock_insert.assert_called_with(tk.END, "file1.txt\nfile2.txt\n")
-
-    @patch('os.path.isdir')
-    def test_change_directory(self, mock_isdir):
-        """Тест команды 'cd'."""
-        # Мокаем существующую директорию
-        mock_isdir.return_value = True
-
-        # Меняем директорию
-        self.emulator.change_directory("dir1")
-        self.assertEqual(self.emulator.current_path, "/dir1")
-
-        # Проверяем несуществующую директорию
-        mock_isdir.return_value = False
-        with patch.object(self.emulator.text_area, 'insert') as mock_insert:
-            self.emulator.change_directory("invalid_dir")
-            mock_insert.assert_called_with(tk.END, "Директория не найдена\n")
+    def test_list_files(self):
+        self.emulator.extract_virtual_fs()
+        self.emulator.list_files()
+        output = self.emulator.text_area.get("1.0", "end").strip()
+        self.assertIn("test_file.txt", output)
 
     def test_print_working_directory(self):
-        """Тест команды 'pwd'."""
-        with patch.object(self.emulator.text_area, 'insert') as mock_insert:
-            self.emulator.print_working_directory()
-            mock_insert.assert_called_with(tk.END, "test_user:/\n")
+        self.emulator.print_working_directory()
+        output = self.emulator.text_area.get("1.0", "end").strip()
+        self.assertEqual(output, "test_user:/")
 
-    @patch('builtins.open', new_callable=MagicMock)
-    def test_touch_file(self, mock_open):
-        """Тест команды 'touch'."""
-        # Создаём файл
-        with patch.object(self.emulator.text_area, 'insert') as mock_insert:
-            self.emulator.touch_file("newfile.txt")
-            mock_insert.assert_called_with(tk.END, "Файл 'newfile.txt' создан.\n")
+    def test_touch_file(self):
+        self.emulator.extract_virtual_fs()
+        self.emulator.touch_file("new_file.txt")
+        self.assertTrue(os.path.exists("virtual_fs/new_file.txt"))
 
-    @patch('os.chmod')
-    def test_chmod_file(self, mock_chmod):
-        """Тест команды 'chmod'."""
-        # Успешное изменение прав
-        with patch.object(self.emulator.text_area, 'insert') as mock_insert:
-            self.emulator.chmod_file("777 newfile.txt")
-            mock_insert.assert_called_with(tk.END, "Права для файла newfile.txt изменены на 777\n")
+    def test_touch_file_error(self):
+        self.emulator.current_path = "/nonexistent_path"
+        self.emulator.touch_file("file.txt")
+        output = self.emulator.text_area.get("1.0", "end").strip()
+        self.assertIn("Ошибка при создании файла", output)
 
-        # Ошибка при изменении прав
-        mock_chmod.side_effect = FileNotFoundError
-        with patch.object(self.emulator.text_area, 'insert') as mock_insert:
-            self.emulator.chmod_file("777 missing_file.txt")
-            mock_insert.assert_called_with(tk.END, "Файл не найден\n")
+    def test_chmod_file(self):
+        self.emulator.extract_virtual_fs()
+        self.emulator.touch_file("chmod_test.txt")
+        self.emulator.chmod_file("777 chmod_test.txt")
+        self.assertTrue(os.access("virtual_fs/chmod_test.txt", os.W_OK))
 
+    def test_chmod_file_not_found(self):
+        self.emulator.chmod_file("777 nonexistent_file.txt")
+        output = self.emulator.text_area.get("1.0", "end").strip()
+        self.assertIn("Файл не найден", output)
+
+    def test_ls_empty_directory(self):
+        os.mkdir("virtual_fs/empty_dir")
+        self.emulator.change_directory("empty_dir")
+        self.emulator.list_files()
+        output = self.emulator.text_area.get("1.0", "end").strip()
+        self.assertEqual(output, "Пустая директория")
+
+    def test_execute_command_ls(self):
+        self.emulator.extract_virtual_fs()
+        self.emulator.entry.insert(0, "ls")
+        self.emulator.execute_command(None)
+        output = self.emulator.text_area.get("1.0", "end").strip()
+        self.assertIn("test_file.txt", output)
+
+    def test_execute_command_invalid(self):
+        self.emulator.entry.insert(0, "invalid_cmd")
+        self.emulator.execute_command(None)
+        output = self.emulator.text_area.get("1.0", "end").strip()
+        self.assertIn("команда не найдена", output)
+
+    def test_execute_command_touch(self):
+        self.emulator.entry.insert(0, "touch new_test_file.txt")
+        self.emulator.execute_command(None)
+        self.assertTrue(os.path.exists("virtual_fs/new_test_file.txt"))
+
+    def test_execute_command_pwd(self):
+        self.emulator.entry.insert(0, "pwd")
+        self.emulator.execute_command(None)
+        output = self.emulator.text_area.get("1.0", "end").strip()
+        self.assertIn("test_user:/", output)
 
 if __name__ == "__main__":
     unittest.main()
