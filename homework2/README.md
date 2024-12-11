@@ -79,3 +79,37 @@
 Второй аргумент: путь, где будет сохранен граф graph.png.
 
 После выполнения команды граф должен появиться в папке C:/output/.
+
+Дальше после установки git установил Graphviz как на видео https://www.youtube.com/watch?v=XnxIfoUQeWw
+конец не получился,пофиксил:
+'''
+вывывод подтверждает, что файлы cgraph.h и библиотеки (например, cgraph.lib) находятся на своих местах. Однако проблема всё ещё может быть связана с компилятором или некорректным указанием путей в процессе установки.
+
+Следующие шаги:
+Попробуйте установить с помощью флагов --config-settings:
+
+    python -m pip install --config-settings="build_ext.include_dirs=G:\грапфиз\Graphviz\include" --config-settings="build_ext.library_dirs=G:\грапфиз\Graphviz\lib" pygraphviz
+
+bash
+Копировать код
+
+    python -m pip install --config-settings="build_ext.include_dirs=G:\грапфиз\Graphviz\include" --config-settings="build_ext.library_dirs=G:\грапфиз\Graphviz\lib" pygraphviz
+
+Если команда не найдена, установите или настройте компилятор. Загрузите Microsoft C++ Build Tools.
+
+Убедитесь, что Python и Graphviz совместимы:
+
+Версии Python (например, 3.12) и компилятора должны быть одинаковой разрядности (64-бит).
+
+Укажите дополнительные переменные среды: Временно добавьте пути к Graphviz в переменные среды, чтобы убедиться, что они корректно находятся:
+
+    set INCLUDE=G:\грапфиз\Graphviz\include;%INCLUDE%
+    set LIB=G:\грапфиз\Graphviz\lib;%LIB%
+После этого снова запустите установку.
+
+Обновите инструменты сборки Python: Убедитесь, что у вас обновлены pip, setuptools, и wheel:
+
+    python -m pip install --upgrade pip setuptools wheel
+Попробуйте выполнить установку после этих шагов. Если проблема не исчезнет, дайте знать, мы будем искать решение дальше!
+'''
+
