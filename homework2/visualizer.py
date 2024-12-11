@@ -1,66 +1,78 @@
 import subprocess
-import argparse
+import sys
 import os
-from graphviz import Digraph
-
 
 def get_commit_tree(repo_path):
-    """
-    Получает список коммитов в репозитории и их зависимости.
-    """
+    """Получает дерево коммитов в репозитории."""
     result = subprocess.run(
         ['git', '-C', repo_path, 'log', '--pretty=format:%H', '--reverse'],
         stdout=subprocess.PIPE,
         stderr=subprocess.PIPE,
-        text=True
+        text=True,
+        encoding='utf-8'
     )
 
     if result.returncode != 0:
         raise RuntimeError(f"Ошибка при получении коммитов: {result.stderr}")
 
     commits = result.stdout.splitlines()
-    return commits
+    commit_links = [(commits[i], commits[i + 1]) for i in range(len(commits) - 1)]
+    return commits, commit_links
 
-
-def generate_graphviz_graph(commits, output_path):
-    """
-    Генерирует граф зависимостей в формате Graphviz и сохраняет в файл.
-    """
-    graph = Digraph(format='png')
-    graph.attr(rankdir='LR')
-
-    previous_commit = None
+def generate_graphviz_code(commits, commit_links):
+    """Создает код Graphviz для графа зависимостей коммитов."""
+    lines = ["digraph G {", "    rankdir=LR;"]
 
     for commit in commits:
-        graph.node(commit, label=commit[:7], shape='ellipse')
-        if previous_commit:
-            graph.edge(previous_commit, commit)
-        previous_commit = commit
+        lines.append(f'    "{commit}" [shape=ellipse];')
 
-    graph.render(output_path, cleanup=True)
+    for parent, child in commit_links:
+        lines.append(f'    "{parent}" -> "{child}";')
 
+    lines.append("}")
+    return "\n".join(lines)
+
+def save_graph(graph_code, output_path):
+    """Сохраняет граф в формате PNG."""
+    dot_file = f"{output_path}.dot"
+    with open(dot_file, 'w') as file:
+        file.write(graph_code)
+
+    result = subprocess.run(
+        ['dot', '-Tpng', dot_file, '-o', output_path],
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+        text=True
+    )
+
+    if result.returncode != 0:
+        raise RuntimeError(f"Ошибка при генерации PNG: {result.stderr}")
+
+    os.remove(dot_file)
 
 def main():
-    """
-    Основная функция программы.
-    """
-    parser = argparse.ArgumentParser(description="Инструмент для визуализации графа зависимостей Git-коммитов с использованием Graphviz.")
-    parser.add_argument('--visualizer_path', required=True, help="Путь к программе для визуализации Graphviz.")
-    parser.add_argument('--repo_path', required=True, help="Путь к анализируемому Git-репозиторию.")
-    parser.add_argument('--output_path', required=True, help="Путь к выходному файлу с графом зависимостей.")
+    if len(sys.argv) != 4:
+        print("Использование: python hw2.py <visualizer_path> <repo_path> <output_path>")
+        sys.exit(1)
 
-    args = parser.parse_args()
+    visualizer_path, repo_path, output_path = sys.argv[1:4]
 
-    os.environ['PATH'] += os.pathsep + os.path.abspath(args.visualizer_path)
+    if not os.path.isfile(visualizer_path):
+        print(f"Ошибка: Файл визуализатора {visualizer_path} не найден.")
+        sys.exit(1)
+
+    if not os.path.isdir(repo_path):
+        print(f"Ошибка: Репозиторий {repo_path} не найден.")
+        sys.exit(1)
 
     try:
-        commits = get_commit_tree(args.repo_path)
-        generate_graphviz_graph(commits, args.output_path)
-        print(f"Граф зависимостей успешно сохранён в {args.output_path}.png")
+        commits, commit_links = get_commit_tree(repo_path)
+        graph_code = generate_graphviz_code(commits, commit_links)
+        save_graph(graph_code, output_path)
+        print(f"Граф зависимостей успешно сохранен в {output_path}")
     except Exception as e:
         print(f"Ошибка: {e}")
-
+        sys.exit(1)
 
 if __name__ == "__main__":
     main()
-
