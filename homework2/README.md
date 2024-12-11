@@ -109,3 +109,25 @@
 Попробуйте выполнить установку после этих шагов. Если проблема не исчезнет, дайте знать, мы будем искать решение дальше!
 '''
 
+Запуск проекта
+
+    python G:\Kon2\graphviz_visualizer\visualizer.py "C:/Users/Георгий/configYprv/homework2/for_commits" "C:/output/graph.png"
+
+Что должно получиться:
+Ваше дерево будет состоять из трех узлов, где:
+От корневого узла (file1.txt) идет связь к узлу (file2.txt),
+От узла (file2.txt) идет связь к узлу (file3.txt).
+
+я создал через git комиты
+
+![image](https://github.com/user-attachments/assets/ec0569c1-3de2-498e-a387-2833280f7a98)
+
+
+дальше я зашёл в cmd попал в свою дирикторию как обычно и мне вывело что файл комитов создан
+
+![image](https://github.com/user-attachments/assets/7fb06707-b710-4c4a-968e-8df23eaf5727)
+
+
+после того как мне выдало что файл комитов создан я зашёл в проводник и вставил C:/output/graph.png и мне вышел граф:
+
+![image](https://github.com/user-attachments/assets/07d3ded8-29f4-4f70-b19c-f23490a0edb9)
