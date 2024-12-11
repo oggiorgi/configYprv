@@ -81,17 +81,13 @@
 После выполнения команды граф должен появиться в папке C:/output/.
 
 Дальше после установки git установил Graphviz как на видео https://www.youtube.com/watch?v=XnxIfoUQeWw
+
 конец не получился,пофиксил:
 '''
 вывывод подтверждает, что файлы cgraph.h и библиотеки (например, cgraph.lib) находятся на своих местах. Однако проблема всё ещё может быть связана с компилятором или некорректным указанием путей в процессе установки.
 
 Следующие шаги:
 Попробуйте установить с помощью флагов --config-settings:
-
-    python -m pip install --config-settings="build_ext.include_dirs=G:\грапфиз\Graphviz\include" --config-settings="build_ext.library_dirs=G:\грапфиз\Graphviz\lib" pygraphviz
-
-bash
-Копировать код
 
     python -m pip install --config-settings="build_ext.include_dirs=G:\грапфиз\Graphviz\include" --config-settings="build_ext.library_dirs=G:\грапфиз\Graphviz\lib" pygraphviz
 
