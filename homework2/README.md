@@ -155,3 +155,11 @@
 
 
 
+код действующего запуска последнего кода на ноутбуке
+
+2. Перейдите в папку graphviz_visualizer:
+Если вы хотите запустить файл, находясь внутри папки с ним, сделайте следующее:
+
+        cd C:\Kon2\graphviz_visualizer
+        python visualizer.py C:\Users\Георгий\configYprv\homework2\commits C:\Kon2\output
+
