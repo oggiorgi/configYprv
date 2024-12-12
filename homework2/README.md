@@ -62,7 +62,7 @@
 Клонирование репозитория:
 Откройте командную строку и перейдите в папку C:\Users\Георгий\RepoName, которую вы создали ранее.
 
-    git clone https://github.com/oggiorgi/configYprv/homework2/for_commits.git
+    git clone https://github.com/oggiorgi/configYprv/blob/main/homework2/for_commits.git
 Эта команда скопирует содержимое репозитория configYprv в папку RepoName.
 
 Проверка клонированного репозитория:
@@ -73,7 +73,7 @@
 
 Запуск скрипта visualizer.py:
   
-    python G:\Kon2\graphviz_visualizer\visualizer.py "C:/Users/Георгий/configYprv/homework2/for_commits" "C:/output/graph.png"
+    python G:\Kon2\graphviz_visualizer\visualizer.py "C:/Users/Георгий/configYprv/blob/main/homework2/for_commits" "C:/output/graph.png"
 Первый аргумент: путь к клонированному репозиторию.
 
 Второй аргумент: путь, где будет сохранен граф graph.png.
