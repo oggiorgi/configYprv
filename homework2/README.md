@@ -62,7 +62,7 @@
 Клонирование репозитория:
 Откройте командную строку и перейдите в папку C:\Users\Георгий\RepoName, которую вы создали ранее.
 
-    git clone https://github.com/oggiorgi/configYprv/blob/main/homework2/for_commits.git
+    git clone https://github.com/oggiorgi/configYprv.git
 Эта команда скопирует содержимое репозитория configYprv в папку RepoName.
 
 Проверка клонированного репозитория:
