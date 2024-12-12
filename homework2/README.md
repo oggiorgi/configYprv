@@ -147,3 +147,11 @@
 
     python -m unittest unittests2.py
 
+Проверка тестов п пайчарме 
+![image](https://github.com/user-attachments/assets/afc0615b-34d9-4852-9d51-19f1b683d750)
+
+Процент кода который покрывают тесты
+![image](https://github.com/user-attachments/assets/2e697c2f-c8c1-4deb-8a48-5f214a516273)
+
+
+
