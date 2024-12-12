@@ -3,7 +3,18 @@ import sys
 import os
 
 def get_commit_tree(repo_path):
-    """Получает дерево коммитов в репозитории."""
+    """
+    Получает дерево коммитов в репозитории.
+
+    Аргументы:
+        repo_path (str): Путь к репозиторию Git.
+
+    Возвращает:
+        tuple: Список коммитов и их связей.
+
+    Исключения:
+        RuntimeError: Ошибка выполнения команды `git log`.
+    """
     result = subprocess.run(
         ['git', '-C', repo_path, 'log', '--pretty=format:%H', '--reverse'],
         stdout=subprocess.PIPE,
@@ -13,14 +24,23 @@ def get_commit_tree(repo_path):
     )
 
     if result.returncode != 0:
-        raise RuntimeError(f"Ошибка при получении коммитов: {result.stderr}")
+        raise RuntimeError(f"Ошибка: {result.stderr}")
 
     commits = result.stdout.splitlines()
     commit_links = [(commits[i], commits[i + 1]) for i in range(len(commits) - 1)]
     return commits, commit_links
 
 def generate_graphviz_code(commits, commit_links):
-    """Создает код Graphviz для графа зависимостей коммитов."""
+    """
+    Генерирует код Graphviz для графа коммитов.
+
+    Аргументы:
+        commits (list): Список коммитов.
+        commit_links (list): Связи между коммитами.
+
+    Возвращает:
+        str: Код Graphviz.
+    """
     lines = ["digraph G {", "    rankdir=LR;"]
 
     for commit in commits:
@@ -33,7 +53,16 @@ def generate_graphviz_code(commits, commit_links):
     return "\n".join(lines)
 
 def save_graph(graph_code, output_path):
-    """Сохраняет граф в формате PNG."""
+    """
+    Сохраняет граф в PNG.
+
+    Аргументы:
+        graph_code (str): Код Graphviz.
+        output_path (str): Путь для PNG.
+
+    Исключения:
+        RuntimeError: Ошибка генерации PNG.
+    """
     dot_file = f"{output_path}.dot"
     with open(dot_file, 'w') as file:
         file.write(graph_code)
@@ -46,11 +75,16 @@ def save_graph(graph_code, output_path):
     )
 
     if result.returncode != 0:
-        raise RuntimeError(f"Ошибка при генерации PNG: {result.stderr}")
+        raise RuntimeError(f"Ошибка: {result.stderr}")
 
     os.remove(dot_file)
 
 def main():
+    """
+    Основная функция. Запускает скрипт с аргументами:
+        - repo_path: путь к репозиторию.
+        - output_path: путь для сохранения PNG.
+    """
     if len(sys.argv) != 3:
         print("Использование: python visualizer.py <repo_path> <output_path>")
         sys.exit(1)
@@ -65,7 +99,7 @@ def main():
         commits, commit_links = get_commit_tree(repo_path)
         graph_code = generate_graphviz_code(commits, commit_links)
         save_graph(graph_code, output_path)
-        print(f"Граф зависимостей успешно сохранен в {output_path}")
+        print(f"Граф успешно сохранен в {output_path}")
     except Exception as e:
         print(f"Ошибка: {e}")
         sys.exit(1)
