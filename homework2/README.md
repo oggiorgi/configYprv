@@ -26,17 +26,7 @@
 
 основаная структура проекта
 
-Kon2/
-
-├── graphviz_visualizer/
-
-│   ├── __init__.py 
-
-│   ├── visualizer.py
-
-├── unittests2.py
-
-└── requirements.txt
+![image](https://github.com/user-attachments/assets/acc6802d-73ea-467e-bbac-b96a29d47883)
 
 Решение
 Шаг 1: Открыть командную строку и пишите
