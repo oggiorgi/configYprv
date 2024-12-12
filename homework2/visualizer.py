@@ -51,15 +51,11 @@ def save_graph(graph_code, output_path):
     os.remove(dot_file)
 
 def main():
-    if len(sys.argv) != 4:
-        print("Использование: python hw2.py <visualizer_path> <repo_path> <output_path>")
+    if len(sys.argv) != 3:
+        print("Использование: python visualizer.py <repo_path> <output_path>")
         sys.exit(1)
 
-    visualizer_path, repo_path, output_path = sys.argv[1:4]
-
-    if not os.path.isfile(visualizer_path):
-        print(f"Ошибка: Файл визуализатора {visualizer_path} не найден.")
-        sys.exit(1)
+    repo_path, output_path = sys.argv[1:3]
 
     if not os.path.isdir(repo_path):
         print(f"Ошибка: Репозиторий {repo_path} не найден.")
@@ -69,7 +65,7 @@ def main():
         commits, commit_links = get_commit_tree(repo_path)
         graph_code = generate_graphviz_code(commits, commit_links)
         save_graph(graph_code, output_path)
-        print(f"Граф зависимостей успешно сохранен в {output_path}")
+        print(f"Граф зависимостей успешно сохранен в {output_path}.png")
     except Exception as e:
         print(f"Ошибка: {e}")
         sys.exit(1)
