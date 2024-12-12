@@ -65,7 +65,7 @@ def main():
         commits, commit_links = get_commit_tree(repo_path)
         graph_code = generate_graphviz_code(commits, commit_links)
         save_graph(graph_code, output_path)
-        print(f"Граф зависимостей успешно сохранен в {output_path}.png")
+        print(f"Граф зависимостей успешно сохранен в {output_path}")
     except Exception as e:
         print(f"Ошибка: {e}")
         sys.exit(1)
