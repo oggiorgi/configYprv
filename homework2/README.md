@@ -25,13 +25,18 @@
 Все функции визуализатора зависимостей должны быть покрыты тестами.
 
 основаная структура проекта
-Kon2/
-├── graphviz_visualizer/
-│   ├── __init__.py 
-│   ├── visualizer.py
-├── unittests2.py
-└── requirements.txt
 
+Kon2/
+
+├── graphviz_visualizer/
+
+│   ├── __init__.py 
+
+│   ├── visualizer.py
+
+├── unittests2.py
+
+└── requirements.txt
 
 Решение
 Шаг 1: Открыть командную строку и пишите
