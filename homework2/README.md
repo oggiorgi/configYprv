@@ -163,3 +163,6 @@
         cd C:\Kon2\graphviz_visualizer
         python visualizer.py C:\Users\Георгий\configYprv\homework2\commits C:\Kon2\output
 
+
+![image](https://github.com/user-attachments/assets/4e0cbf3f-dad1-46ba-8b26-1a852e8169d5)
+
