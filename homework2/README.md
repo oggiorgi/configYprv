@@ -24,6 +24,15 @@
 
 Все функции визуализатора зависимостей должны быть покрыты тестами.
 
+основаная структура проекта
+Kon2/
+├── graphviz_visualizer/
+│   ├── __init__.py 
+│   ├── visualizer.py
+├── unittests2.py
+└── requirements.txt
+
+
 Решение
 Шаг 1: Открыть командную строку и пишите
 
@@ -131,3 +140,15 @@
 после того как мне выдало что файл комитов создан я зашёл в проводник и вставил C:/output/graph.png и мне вышел граф:
 
 ![image](https://github.com/user-attachments/assets/07d3ded8-29f4-4f70-b19c-f23490a0edb9)
+
+Переходим к выполнению тестов
+
+чтобы запустить тест надо перейти в директорию где unittests2.py
+     
+    cd C:\Kon2
+    set PYTHONPATH=G:\Kon2
+.
+Сам запуск
+
+    python -m unittest unittests2.py
+
