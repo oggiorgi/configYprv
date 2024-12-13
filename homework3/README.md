@@ -81,4 +81,11 @@ C:\Kon3\
 ├── requirements.txt
 
 
+Установите библиотеку toml с помощью следующей команды:
+
+    pip install toml
+Если у вас есть файл requirements.txt, он должен включать toml. Перезапустите установку зависимостей:
+
+    pip install -r requirements.txt
+
 
