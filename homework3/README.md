@@ -63,7 +63,15 @@ set имя = значение;
 Преобразование в YAML.
 Тестирование на примерах
 
-![image](https://github.com/user-attachments/assets/1bb57ea7-ab43-4cb9-9c9d-91d0b96c4df1)
+
+C:\Kon3\
+├── src\
+│   ├── config_to_toml.py  # Основной скрипт
+│   └── parser.py          # Логика парсинга
+├── examples\
+│   ├── config1.txt        # Пример конфигурационного файла
+├── output\                # Папка для сохранения результатов
+├── requirements.txt
 
 
 
