@@ -1,0 +1,19 @@
+[features]
+    dark_mode = true
+    experimental = false
+    beta_features = ["feature1", "feature2", "feature3"]
+[metadata]
+    version = "2.0.0"
+    author = "Jane Doe"
+    contributors = ["Alice", "Bob", "Charlie"]
+    [repository]
+        type = "git"
+        url = "https://github.com/oggiorgi.git"
+[settings]
+    theme = "dark"
+    [notifications]
+        email = true
+        sms = false
+        push = true
+    languages = ["English", "Spanish", "German"]
+app_name = "MyApp"

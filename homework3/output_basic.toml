@@ -1,0 +1,6 @@
+database = "example_db"
+port = 3306
+debug = true
+max_connections = 100
+timeout = 30
+log_level = "INFO"
