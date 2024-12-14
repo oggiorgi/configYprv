@@ -1,3 +1,4 @@
+код который выводит так же входные данные и выходные
 import argparse
 import re
 import sys
