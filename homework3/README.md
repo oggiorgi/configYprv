@@ -81,4 +81,13 @@ set имя = значение;
 
     pip install -r requirements.txt
 
+Запуск
+
+    python config_to_toml.py --input=input_basic.txt --output=output_basic.toml
+.
+
+    python config_to_toml.py --input=input_nested.txt --output=output_nested.toml
+.
+
+    python config_to_toml.py --input=input_complex.txt --output=output_complex.toml
 
