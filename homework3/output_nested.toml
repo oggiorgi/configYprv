@@ -1,0 +1,13 @@
+[server]
+host = "127.0.0.1"
+port = 8080
+ssl = false
+
+[database]
+name = "example_db"
+user = "admin"
+password = "secure_password"
+
+[database.tables]
+users = "users_table"
+orders = "orders_table"
