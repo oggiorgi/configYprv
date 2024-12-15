@@ -91,3 +91,18 @@ set имя = значение;
 
     python config_to_toml.py --input=input_complex.txt --output=output_complex.toml
 
+Проверка тестов
+
+![image](https://github.com/user-attachments/assets/7212b2a1-294d-473c-bac7-e0a12349aa06)
+
+![image](https://github.com/user-attachments/assets/134c82ca-cc87-46a4-bbe8-6cda0f97554e)
+
+Базовый запуск тестов
+
+    python -m unittest test_config_to_toml.py
+
+Запуск тестов
+
+![image](https://github.com/user-attachments/assets/c8e24f8d-58c6-4b02-8447-e5e948ec9307)
+
+    python -m unittest discover -v
